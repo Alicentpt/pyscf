@@ -4645,9 +4645,9 @@ void ECPsph_ine(double *out, int order, double z)
                         ti = .5 / z;
                         s = ti;
                         for (k = 1; k <= i; k++) {
-                                ti *= z2;
-                                s += ti * _factorial[i+k]
-                                        / (_factorial[k] * _factorial[i-k]);
+                                // Accumulate the ratio without a bounded factorial table.
+                                ti *= z2 * (i + k) * (i - k + 1) / k;
+                                s += ti;
                         }
                         out[i] = s;
                 }
