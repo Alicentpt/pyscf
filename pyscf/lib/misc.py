@@ -99,15 +99,31 @@ _dll_deps = {
     'libdft':        ['libcvhf', 'libcgto', 'libcint'],
     'libpbc':        ['libcint', 'libcgto'],
     'libri':         ['libao2mo', 'libcvhf', 'libcgto', 'libcint'],
-    'libxc_itrf':    ['xc'],
-    'libxcfun_itrf': ['xcfun'],
+    # Windows wheels may bundle lib-prefixed support DLLs, while conda-forge
+    # provides xc.dll and xcfun.dll. Prefer the bundled names, then fall back
+    # to the environment-provided names.
+    'libxc_itrf':    [('libxc', 'xc')],
+    'libxcfun_itrf': [('libxcfun', 'xcfun')],
 }
+
+def _load_dependency(libname):
+    if isinstance(libname, str):
+        return load_library(libname)
+    if isinstance(libname, tuple):
+        for candidate in libname:
+            try:
+                return load_library(candidate)
+            except OSError:
+                pass
+        raise OSError(f'Library candidates {libname} not found')
+
+    raise TypeError(f'Unsupported dependency spec: {libname!r}')
 
 @functools.lru_cache(128)
 def load_library(libname):
     lib = None
+    _loaderpath = os.path.dirname(__file__)
     try:
-        _loaderpath = os.path.dirname(__file__)
         lib = numpy.ctypeslib.load_library(libname, _loaderpath)
     except OSError:
         pass
@@ -136,7 +152,7 @@ def load_library(libname):
             raise OSError(f'Library {libname} not found')
 
     if sys.platform == 'win32' and libname in _dll_deps:
-        deps = [load_library(d) for d in _dll_deps[libname]]
+        deps = [_load_dependency(d) for d in _dll_deps[libname]]
         lib = make_dll_wrapper(lib, *deps)
     return lib
 
@@ -1497,7 +1513,7 @@ def git_info(repo_path):
     try:
         with open(os.path.join(repo_path, '.git', 'ORIG_HEAD'), 'r') as f:
             orig_head = f.read().strip()
-    except IOError:
+    except OSError:
         pass
 
     try:
@@ -1509,7 +1525,7 @@ def git_info(repo_path):
             branch = os.path.basename(head)
             with open(os.path.join(repo_path, '.git', head.split(' ')[1]), 'r') as f:
                 head = f.read().strip()
-    except IOError:
+    except OSError:
         pass
     return orig_head, head, branch
 
@@ -1520,8 +1536,8 @@ def format_sys_info():
     result = [
         f'System: {platform.uname()}  Threads {num_threads()}',
         f'Python {sys.version}',
-        f'numpy {numpy.__version__}  scipy {scipy.__version__}  '
-        f'h5py {h5py.__version__}',
+        (f'numpy {numpy.__version__}  scipy {scipy.__version__}  '
+         f'h5py {h5py.__version__}'),
         f'Date: {time.ctime()}',
         f'PySCF version {pyscf.__version__}',
         f'PySCF path  {info["path"]}',

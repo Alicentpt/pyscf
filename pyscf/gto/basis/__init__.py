@@ -302,7 +302,6 @@ ALIAS = {
     'bfdv5z'     : 'bfd_v5z.dat',
     'bfd'        : 'bfd_pp.dat',
     'bfdpp'      : 'bfd_pp.dat',
-#
     'ccpcvdzf12optri': os.path.join('f12-basis', 'cc-pCVDZ-F12-OptRI.dat'),
     'ccpcvtzf12optri': os.path.join('f12-basis', 'cc-pCVTZ-F12-OptRI.dat'),
     'ccpcvqzf12optri': os.path.join('f12-basis', 'cc-pCVQZ-F12-OptRI.dat'),
@@ -324,6 +323,8 @@ ALIAS = {
 # All-electron basis designed for periodic calculations, available in Crystal
     'pobtzvp'       :  'pob-tzvp.dat',
     'pobtzvpp'      :  'pob-tzvpp.dat',
+    'pobdzvprev2'   :  'pob-dzvp-rev2.dat',
+    'pobtzvprev2'   :  'pob-tzvp-rev2.dat',
     'crystalccpvdz' :  'crystal-cc-pvdz.dat',
 # ccECP
     'ccecp'         : join('ccecp-basis', 'ccECP', 'ccECP.dat'   ),
